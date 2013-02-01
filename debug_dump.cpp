@@ -31,8 +31,7 @@ const static TCHAR* DUMP_BASE_PATH = TEXT("%TEMP%\\f3kdb_dump\\");
 
 #define FAIL_ON_ZERO(expr) if (!(expr)) abort()
 
-__declspec(align(4))
-static volatile DWORD _tls_slot = TLS_OUT_OF_INDEXES;
+static volatile DWORD _ALIGNED(4) _tls_slot = TLS_OUT_OF_INDEXES;
 
 void ensure_tls_slot()
 {
@@ -224,8 +223,7 @@ void dump_value(const TCHAR* dump_name, __m128i value, int word_size_in_bytes, b
     debug_dump_stage_t* stage = find_or_create_dump_stage(dump_name);
     debug_dump_t* handle = get_dump_handle();
 
-    __declspec(align(16))
-    char buffer[16];
+    char _ALIGNED(16) buffer[16];
 
     _mm_store_si128((__m128i*)buffer, value);
 

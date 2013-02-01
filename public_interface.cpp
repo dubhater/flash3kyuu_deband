@@ -2,13 +2,19 @@
 #include <assert.h>
 #include <exception>
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdarg.h>
+#include <new>
 
 #include "compiler_compat.h"
 #include "core.h"
 #include "auto_utils.h"
 #include "constants.h"
 #include "impl_dispatch.h"
+
+#ifndef _WIN32
+#define _strdup strdup
+#endif
 
 F3KDB_API(int) f3kdb_params_init_defaults(f3kdb_params_t* params, int interface_version)
 {

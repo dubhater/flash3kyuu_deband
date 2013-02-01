@@ -1,9 +1,26 @@
 #pragma once
 
+#ifndef _WIN32
+#define __cdecl
+#define __forceinline inline
+#define InterlockedCompareExchangePointer(a,b,c) __sync_val_compare_and_swap(a,c,b)
+#endif
+
+#if defined(_MSC_VER)
+#define _ALIGNED(x) __declspec(align(x))
+#else
+#if defined(__GNUC__)
+#define _ALIGNED(x) __attribute__ ((aligned(x)))
+#endif
+#endif
+
+#include <x86intrin.h>
+#include <stdint.h>
+
 #include "include/f3kdb.h"
 #include "process_plane_context.h"
 
-typedef __declspec(align(4)) struct _pixel_dither_info {
+typedef struct _ALIGNED(4) _pixel_dither_info {
     signed char ref1, ref2;
     signed short change;
 } pixel_dither_info;
@@ -88,5 +105,5 @@ public:
     f3kdb_core_t(const f3kdb_video_info_t* video_info, const f3kdb_params_t* params);
     virtual ~f3kdb_core_t();
 
-    int f3kdb_core_t::process_plane(int frame_index, int plane, unsigned char* dst_frame_ptr, int dst_pitch, const unsigned char* src_frame_ptr, int src_pitch);
+    int process_plane(int frame_index, int plane, unsigned char* dst_frame_ptr, int dst_pitch, const unsigned char* src_frame_ptr, int src_pitch);
 };

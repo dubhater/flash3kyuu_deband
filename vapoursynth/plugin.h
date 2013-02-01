@@ -8,6 +8,10 @@
 #include "../include/f3kdb.h"
 #include "VapourSynth.h"
 
+#ifndef _WIN32
+#define _snprintf snprintf
+#endif
+
 static const int _peOutOfRange = 0x7fffffff;
 static const int _peNoError = 0;
 
@@ -26,13 +30,13 @@ static T get_value_from_vsmap(const VSAPI* vsapi, const VSMap* in, const char* n
 }
 
 template <>
-static bool get_value_from_vsmap<bool>(const VSAPI* vsapi, const VSMap* in, const char* name, int* error)
+bool get_value_from_vsmap<bool>(const VSAPI* vsapi, const VSMap* in, const char* name, int* error)
 {
     return !!vsapi->propGetInt(in, name, 0, error);
 }
 
 template <>
-static double get_value_from_vsmap<double>(const VSAPI* vsapi, const VSMap* in, const char* name, int* error)
+double get_value_from_vsmap<double>(const VSAPI* vsapi, const VSMap* in, const char* name, int* error)
 {
     return vsapi->propGetFloat(in, name, 0, error);
 }

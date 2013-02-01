@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstring>
+
 #include "f3kdb_enums.h"
 #include "f3kdb_params.h"
 
@@ -59,7 +61,11 @@ enum
     F3KDB_ERROR_MAX
 };
 
+#ifdef _WIN32
 #define F3KDB_CC __stdcall
+#else
+#define F3KDB_CC
+#endif
 
 #ifdef FLASH3KYUU_DEBAND_EXPORTS
 #define F3KDB_API(ret) extern "C" __declspec(dllexport) ret F3KDB_CC

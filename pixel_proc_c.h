@@ -5,12 +5,12 @@
 #include "impl_dispatch.h"
 
 #define CALL_IMPL(func, ...) \
-	( mode == DA_HIGH_NO_DITHERING ? pixel_proc_high_no_dithering::##func(__VA_ARGS__) : \
-	  mode == DA_HIGH_ORDERED_DITHERING ? pixel_proc_high_ordered_dithering::##func(__VA_ARGS__) : \
-	  mode == DA_HIGH_FLOYD_STEINBERG_DITHERING ? pixel_proc_high_f_s_dithering::##func(__VA_ARGS__) : \
-	  mode == DA_16BIT_STACKED ? pixel_proc_16bit::##func(__VA_ARGS__) : \
-	  mode == DA_16BIT_INTERLEAVED ? pixel_proc_16bit::##func(__VA_ARGS__) : \
-	  (abort(), 0) )
+	( mode == DA_HIGH_NO_DITHERING ? pixel_proc_high_no_dithering::func(__VA_ARGS__) : \
+	  mode == DA_HIGH_ORDERED_DITHERING ? pixel_proc_high_ordered_dithering::func(__VA_ARGS__) : \
+	  mode == DA_HIGH_FLOYD_STEINBERG_DITHERING ? pixel_proc_high_f_s_dithering::func(__VA_ARGS__) : \
+	  mode == DA_16BIT_STACKED ? pixel_proc_16bit::func(__VA_ARGS__) : \
+	  mode == DA_16BIT_INTERLEAVED ? pixel_proc_16bit::func(__VA_ARGS__) : \
+	  abort() )
 
 #define CHECK_MODE() if (mode < 0 || mode >= DA_COUNT) abort()
 
@@ -47,6 +47,16 @@ static inline void pixel_proc_next_row(void* context)
 	CHECK_MODE();
 	CALL_IMPL(next_row, context);
 }
+
+#undef CALL_IMPL
+
+#define CALL_IMPL(func, ...) \
+	( mode == DA_HIGH_NO_DITHERING ? pixel_proc_high_no_dithering::func(__VA_ARGS__) : \
+	  mode == DA_HIGH_ORDERED_DITHERING ? pixel_proc_high_ordered_dithering::func(__VA_ARGS__) : \
+	  mode == DA_HIGH_FLOYD_STEINBERG_DITHERING ? pixel_proc_high_f_s_dithering::func(__VA_ARGS__) : \
+	  mode == DA_16BIT_STACKED ? pixel_proc_16bit::func(__VA_ARGS__) : \
+	  mode == DA_16BIT_INTERLEAVED ? pixel_proc_16bit::func(__VA_ARGS__) : \
+	  0 )
 
 template <int mode>
 static inline int pixel_proc_upsample(void* context, unsigned char pixel)

@@ -3,6 +3,7 @@
 #include "process_plane_context.h"
 
 #include <assert.h>
+#include <string.h>
 
 // disable SSE instructions here to allow running on pre-SSE2 systems
 #if defined(__INTEL_COMPILER)

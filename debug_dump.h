@@ -1,4 +1,4 @@
-
+#ifdef _WIN32
 #include <Windows.h>
 
 #include <stdio.h>
@@ -14,6 +14,7 @@ void dump_value(const TCHAR* dump_name, int value);
 void dump_value(const TCHAR* dump_name, __m128i value, int word_size_in_bytes, bool is_signed);
 
 void dump_finish();
+#endif
 
 #ifdef ENABLE_DEBUG_DUMP
 

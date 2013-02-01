@@ -7,6 +7,8 @@
 #include "x64_compat.h"
 #include "debug_dump.h"
 
+#include <vapoursynth/VSHelper.h>
+
 /****************************************************************************
  * NOTE: DON'T remove static from any function in this file, it is required *
  *       for generating code in multiple SSE versions.                      *
@@ -23,7 +25,7 @@ static void destroy_cache(void* data)
     assert(data);
 
     info_cache* cache = (info_cache*) data;
-    _aligned_free(cache->data_stream);
+    vs_aligned_free(cache->data_stream);
     free(data);
 }
 
@@ -396,14 +398,10 @@ static void __forceinline read_reference_pixels(
     __m128i& ref_pixels_3_0,
     __m128i& ref_pixels_4_0)
 {
-    __declspec(align(16))
-    unsigned short tmp_1[8];
-    __declspec(align(16))
-    unsigned short tmp_2[8];
-    __declspec(align(16))
-    unsigned short tmp_3[8];
-    __declspec(align(16))
-    unsigned short tmp_4[8];
+    unsigned short _ALIGNED(16) tmp_1[8];
+    unsigned short _ALIGNED(16) tmp_2[8];
+    unsigned short _ALIGNED(16) tmp_3[8];
+    unsigned short _ALIGNED(16) tmp_4[8];
 
     // cache layout: 8 offset groups (1 or 2 offsets / group depending on sample mode) in a pack, 
     //               followed by 16 bytes of change values
@@ -482,8 +480,7 @@ static void __cdecl _process_plane_sse_impl(const process_plane_params& params, 
 
     __m128i one_i8 = _mm_set1_epi8(1);
     
-    __declspec(align(16))
-    char context_buffer[DITHER_CONTEXT_BUFFER_SIZE];
+    char _ALIGNED(16) context_buffer[DITHER_CONTEXT_BUFFER_SIZE];
 
     dither_high::init<dither_algo>(context_buffer, params.plane_width_in_pixels, params.output_depth);
 
@@ -521,8 +518,7 @@ static void __cdecl _process_plane_sse_impl(const process_plane_params& params, 
     info_cache *cache = NULL;
     char* info_data_stream = NULL;
 
-    __declspec(align(16))
-    char dummy_info_buffer[128];
+    char _ALIGNED(16) dummy_info_buffer[128];
 
     // initialize storage for pre-calculated pixel offsets
     if (context->data) {
@@ -540,7 +536,7 @@ static void __cdecl _process_plane_sse_impl(const process_plane_params& params, 
         // set up buffer for cache
         cache = (info_cache*)malloc(sizeof(info_cache));
         // 4 offsets (2 bytes per item) + 2-byte change
-        info_data_stream = (char*)_aligned_malloc(params.info_stride * (4 * 2 + 2) * params.get_src_height(), FRAME_LUT_ALIGNMENT);
+        info_data_stream = (char*)vs_aligned_malloc<char*>(params.info_stride * (4 * 2 + 2) * params.get_src_height(), FRAME_LUT_ALIGNMENT);
         cache->data_stream = info_data_stream;
         cache->pitch = params.src_pitch;
     }

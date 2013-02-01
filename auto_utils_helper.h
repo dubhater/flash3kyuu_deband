@@ -4,8 +4,13 @@
 #include <limits>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <cstring>
 
 #include "include/f3kdb.h"
+
+#ifndef _WIN32
+#define _stricmp strcmp
+#endif
 
 using namespace std;
 
@@ -35,7 +40,7 @@ int params_set_value_by_string(T* target, const char* value_string)
     static_assert(is_integral<T>::value || is_same<T, double>::value || is_enum<T>::value, "T must be integral type");
     char* end = NULL;
     errno = 0;
-    number_converter<T>::intermediate_type value;
+    typename number_converter<T>::intermediate_type value;
     value = number_converter<T>::convert(value_string, &end);
     if (errno == ERANGE)
     {

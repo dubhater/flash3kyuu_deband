@@ -2,7 +2,7 @@
 #include <stdarg.h>
 #include <memory.h>
 #include <assert.h>
-#include <intrin.h>
+#include <vapoursynth/VSHelper.h>
 
 #include "core.h"
 #include "constants.h"
@@ -12,16 +12,16 @@
 
 void f3kdb_core_t::destroy_frame_luts(void)
 {
-    _aligned_free(_y_info);
-    _aligned_free(_cb_info);
-    _aligned_free(_cr_info);
+    vs_aligned_free(_y_info);
+    vs_aligned_free(_cb_info);
+    vs_aligned_free(_cr_info);
     
     _y_info = NULL;
     _cb_info = NULL;
     _cr_info = NULL;
     
-    _aligned_free(_grain_buffer_y);
-    _aligned_free(_grain_buffer_c);
+    vs_aligned_free(_grain_buffer_y);
+    vs_aligned_free(_grain_buffer_c);
     
     _grain_buffer_y = NULL;
     _grain_buffer_c = NULL;
@@ -62,7 +62,7 @@ static int get_frame_lut_stride(int width_in_pixels)
 
 static short* generate_grain_buffer(size_t item_count, RANDOM_ALGORITHM algo, int& seed, double param, int range)
 {
-    short* buffer = (short*)_aligned_malloc(item_count * sizeof(short), FRAME_LUT_ALIGNMENT);
+    short* buffer = (short*)vs_aligned_malloc<short*>(item_count * sizeof(short), FRAME_LUT_ALIGNMENT);
     for (size_t i = 0; i < item_count; i++)
     {
         *(buffer + i) = random(algo, seed, range, param);
@@ -93,7 +93,7 @@ void f3kdb_core_t::init_frame_luts(void)
     y_stride = get_frame_lut_stride(width_in_pixels);
 
     int y_size = sizeof(pixel_dither_info) * y_stride * height_in_pixels;
-    _y_info = (pixel_dither_info*)_aligned_malloc(y_size, FRAME_LUT_ALIGNMENT);
+    _y_info = (pixel_dither_info*)vs_aligned_malloc<pixel_dither_info*>(y_size, FRAME_LUT_ALIGNMENT);
 
     // ensure unused items are also initialized
     memset(_y_info, 0, y_size);
@@ -101,8 +101,8 @@ void f3kdb_core_t::init_frame_luts(void)
     int c_stride;
     c_stride = get_frame_lut_stride(_video_info.get_plane_width(PLANE_CB));
     int c_size = sizeof(pixel_dither_info) * c_stride * (_video_info.get_plane_height(PLANE_CB));
-    _cb_info = (pixel_dither_info*)_aligned_malloc(c_size, FRAME_LUT_ALIGNMENT);
-    _cr_info = (pixel_dither_info*)_aligned_malloc(c_size, FRAME_LUT_ALIGNMENT);
+    _cb_info = (pixel_dither_info*)vs_aligned_malloc<pixel_dither_info*>(c_size, FRAME_LUT_ALIGNMENT);
+    _cr_info = (pixel_dither_info*)vs_aligned_malloc<pixel_dither_info*>(c_size, FRAME_LUT_ALIGNMENT);
 
     memset(_cb_info, 0, c_size);
     memset(_cr_info, 0, c_size);
@@ -235,6 +235,7 @@ static __inline int select_impl_index(int sample_mode, bool blur_first)
 static process_plane_impl_t get_process_plane_impl(int sample_mode, bool blur_first, int opt, int dither_algo)
 {
     if (opt == IMPL_AUTO_DETECT) {
+#ifdef _WIN32
         int cpu_info[4] = {-1};
         __cpuid(cpu_info, 1);
         if (cpu_info[2] & 0x80000) {
@@ -246,6 +247,9 @@ static process_plane_impl_t get_process_plane_impl(int sample_mode, bool blur_fi
         } else {
             opt = IMPL_C;
         }
+#else
+        opt = IMPL_C;
+#endif
     }
     const process_plane_impl_t* impl_table = process_plane_impls[dither_algo][opt];
     return impl_table[select_impl_index(sample_mode, blur_first)];
